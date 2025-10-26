@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Thumbnail Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    input {
+      padding: 10px;
+      width: 320px;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+    button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border: none;
+      background-color: #ff0000;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #cc0000;
+    }
+    .thumbnail-container {
+      margin-top: 30px;
+      text-align: center;
+      max-width: 90%;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-top: 10px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+    a {
+      color: #1e90ff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Thumbnail Viewer</h1>
+  <div>
+    <input id="videoInput" type="text" placeholder="Enter YouTube URL or Video ID" />
+    <button onclick="showThumbnail()">Show Thumbnail</button>
+  </div>
+
+  <div class="thumbnail-container" id="thumbnailContainer"></div>
+
+  <script>
+    // Function to extract YouTube video ID from URL or plain ID
+    function extractVideoId(input) {
+      // If only an ID (11 characters alphanumeric + - and _)
+      if (/^[a-zA-Z0-9_-]{11}$/.test(input)) {
+        return input;
+      }
+
+      try {
+        const url = new URL(input);
+        // Check different possible formats
+        if (url.hostname.includes("youtu.be")) {
+          return url.pathname.split("/")[1];
+        }
+        if (url.hostname.includes("youtube.com")) {
+          if (url.searchParams.get("v")) return url.searchParams.get("v");
+          if (url.pathname.startsWith("/shorts/")) return url.pathname.split("/")[2];
+        }
+      } catch (e) {
+        // Not a valid URL — return empty
+        return "";
+      }
+
+      return "";
+    }
+
+    function showThumbnail() {
+      const userInput = document.getElementById("videoInput").value.trim();
+      const container = document.getElementById("thumbnailContainer");
+      container.innerHTML = "";
+
+      const videoId = extractVideoId(userInput);
+
+      if (!videoId) {
+        container.innerHTML = "<p>Please enter a valid YouTube URL or video ID.</p>";
+        return;
+      }
+
+      // Construct YouTube thumbnail URLs
+      const thumbnails = {
+        high: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        medium: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        low: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+      };
+
+      container.innerHTML = `
+        <h2>Thumbnails for: <a href="https://youtu.be/${videoId}" target="_blank">${videoId}</a></h2>
+        <div>
+          <p><strong>High Quality (maxresdefault):</strong></p>
+          <img src="${thumbnails.high}" alt="High quality thumbnail" onerror="this.onerror=null; this.src='${thumbnails.medium}'">
+          
+          <p><strong>Medium Quality (hqdefault):</strong></p>
+          <img src="${thumbnails.medium}" alt="Medium quality thumbnail">
+          
+          <p><strong>Low Quality (mqdefault):</strong></p>
+          <img src="${thumbnails.low}" alt="Low quality thumbnail">
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
